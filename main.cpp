@@ -57,7 +57,8 @@ int main() {
 		return -1;
 	}
 
-	Mat frame, frame_gray, frame_prev, frame_prev_gray, frame_diff, frame_thresh, frame_thresh_dilate;
+	Mat frame, frame_gray, frame_prev, frame_prev_gray, frame_diff, frame_thresh, frame_thresh_dilate, frame_hsv;
+	Mat mask1, mask2;
 	int thresh_value = 20;
 	int max_thresh_value = 255;
 
@@ -80,10 +81,29 @@ int main() {
 		dilate(frame_thresh, frame_thresh_dilate, Mat(), Point(-1, -1), 3, 0);
 		erode(frame_thresh_dilate, frame_thresh_dilate, Mat(), Point(-1, -1), 1, 0);
 
+		Mat frame_copy;
+		frame.copyTo(frame_copy);
+		Mat frame_motion;
+		bitwise_and(frame_copy, frame_copy, frame_motion, frame_thresh_dilate);
+
+		//========== color =================
+		//GaussianBlur(frame_motion, frame_motion, Size(15, 15), 0);
+		cvtColor(frame_motion, frame_hsv, COLOR_BGR2HSV);
+
+		Mat frame_fire;
+		inRange(frame_hsv, Scalar(0, 0, 160), Scalar(30, 255, 255), mask1);
+		inRange(frame_hsv, Scalar(160, 50, 160), Scalar(180, 255, 255), mask2);
+
+		Mat1b mask = mask1 | mask2;
+
+		bitwise_and(frame, frame_hsv, frame_fire, mask);
+
 		imshow("Frame", frame);
 		imshow("Frame Diff", frame_diff);
 		imshow("Frame Thresh", frame_thresh);
 		imshow("Frame Thresh Dilate", frame_thresh_dilate);
+		imshow("Frame Motion", frame_motion);
+		imshow("Frame Fire", frame_fire);
 
 		waitKey(15);
 		if (GetKeyState(VK_ESCAPE) & 0x8000) {
