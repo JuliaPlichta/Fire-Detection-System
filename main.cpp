@@ -38,6 +38,8 @@ int main() {
 	Mat frame_motion, frame_fire;
 	int is_fire = 0;
 	bool is_day = true;
+	int counter = 0;
+	bool is_sound = false;
 	int key = waitKey(1);
 
 	cap >> frame;
@@ -65,12 +67,21 @@ int main() {
 		is_fire = detect_contours(frame, frame_fire);
 
 		if (is_fire == 2) {
+			counter++;
 			putText(frame, "FIRE!!!", Point(10, 30), FONT_HERSHEY_PLAIN, 2, red, 2);
 		}
 
-		if (is_fire == 1)
+		if (is_fire == 1) {
+			counter = 0;
 			putText(frame, "WARNING!!!", Point(10, 30), FONT_HERSHEY_PLAIN, 2, yellow, 2);
+			PlaySound(NULL, 0, 0);
+		}
 		is_fire = 0;
+
+		if (counter >= 20 && !is_sound) {
+			is_sound = PlaySound(TEXT("alarm.wav"), NULL, SND_LOOP | SND_ASYNC);
+			counter = 0;
+		}
 
 		imshow("Frame", frame);
 		imshow("Frame Original", frame_original);
